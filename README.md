@@ -12,10 +12,11 @@ Pox is (yet another) PHP MVC web framework with the following features.
   is paged.
 
 Pox includes some or all of the following open-source software:
-- Smarty templating system <http://www.smarty.net>
-- PEAR <http://pear.php.net>
-- Zend Framework <http://framework.zend.com>
-- Phing build system <http://phing.info>
+
+- Smarty templating system (http://www.smarty.net)
+- PEAR (http://pear.php.net)
+- Zend Framework (http://framework.zend.com)
+- Phing build system (http://phing.info)
 
 
 Configuring Apache
@@ -38,7 +39,7 @@ system-generated data.  User-uploaded data should be stored in
 `artifacts/uploaded`. You'll need an Apache `Alias` directive to make this
 content web-accessible.
 
-    Alias /uploaded /path/to/real/uploaded
+    Alias /uploaded /path/to/real/artifacts/uploaded
 
 
 ----
