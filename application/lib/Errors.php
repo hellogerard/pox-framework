@@ -110,7 +110,7 @@ class Errors
         echo "<h4>You've encountered a fatal error. Please copy and paste the 
             following <br/>\n";
         echo "block of text into an email and send to
-            <a href=\"mailto:bugs@zipscene.com\">bugs@zipscene.com</a>.</h4>\n";
+            <a href=\"mailto:bugs@mydomain.com\">bugs@mydomain.com</a>.</h4>\n";
         
         echo "<pre>$str</pre>";
         exit;

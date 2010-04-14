@@ -51,10 +51,10 @@ class Slave
         if (! empty($recipients))
         {
             $to = $recipients;
-            $subject = "ZIPSCENE: " . basename(getcwd()) . "/{$this->_logfile}";
+            $subject = "CRON: " . basename(getcwd()) . "/{$this->_logfile}";
             $message = file_get_contents($this->_logfile);
-            $headers = "From: cron <nobody@zipscene.com>";
-            mail($to, $subject, $message, $headers, "-fnobody@zipscene.com");
+            $headers = "From: cron <nobody@mydomain.com>";
+            mail($to, $subject, $message, $headers, "-fnobody@mydomain.com");
         }
     }
 
