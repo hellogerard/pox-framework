@@ -13,10 +13,10 @@ Pox is (yet another) PHP MVC web framework with the following features.
 
 Pox includes some or all of the following open-source software:
 
-- Smarty templating system (http://www.smarty.net)
-- PEAR (http://pear.php.net)
-- Zend Framework (http://framework.zend.com)
-- Phing build system (http://phing.info)
+- Smarty templating system (<http://www.smarty.net>)
+- PEAR (<http://pear.php.net>)
+- Zend Framework (<http://framework.zend.com>)
+- Phing build system (<http://phing.info>)
 
 
 Configuring Apache
