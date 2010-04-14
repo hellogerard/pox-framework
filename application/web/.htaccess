@@ -1,0 +1,16 @@
+<Files *.tpl>
+    Deny from all
+</Files>
+
+# The following rule forwards any URL that is does not exist on the file system
+
+RewriteEngine On
+
+# if request is NOT a directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# and is NOT a regular file
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# then give to index.php
+RewriteRule ^(.*) /index.php [L]

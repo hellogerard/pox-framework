@@ -1,0 +1,208 @@
+<?xml version="1.0"?>
+
+<!--
+    This is a phing build file. To run this, type `phing` in this directory.
+
+    See: http://phing.info 
+         http://phing.info/trac/wiki/Users/Download (installation)
+-->
+
+<project name="My Project" basedir=".." default="main">
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++ Configuration +++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This is where all generated build files go -->
+    <property name="build.dir" value="artifacts/buildreports" />
+
+    <!-- This sets the PHP include path -->
+    <includepath classpath="config"/>
+
+    <!--
+        This is the fileset of source code files (not including tests or
+        bootstrap file)
+    -->
+    <fileset dir="application" id="source.code">
+        <include name="lib/**/*.php"/>
+        <include name="models/**/*.php"/>
+        <include name="controllers/**/*.php"/>
+    </fileset>
+
+    <!-- This is the fileset of unit tests -->
+    <fileset dir="application" id="unit.tests">
+        <include name="tests/**/*Test.php"/>
+    </fileset>
+
+    <!-- This is the PEAR data directory -->
+    <if><isset property="env.PHP_PEAR_DATA_DIR" />
+    <then>
+        <property name="pear.data.dir" value="${env.PHP_PEAR_DATA_DIR}" />
+    </then>
+    <else>
+        <property name="pear.data.dir" value="/usr/share/pear/data" />
+    </else>
+    </if>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++ Targets +++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This target runs `php -l` on the fileset -->
+    <target name="lint">
+        <phplint haltonfailure="true">
+            <fileset refid="source.code"/>
+        </phplint>
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This target runs all unit tests in the fileset -->
+    <target name="test">
+        <mkdir dir="${build.dir}/tests"/>
+
+        <phpunit codecoverage="false" haltonfailure="true" printsummary="true">
+            <batchtest>
+                <fileset refid="unit.tests"/>
+            </batchtest>
+            <formatter type="xml" todir="${build.dir}/tests" outfile="logfile.xml"/>
+        </phpunit>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This target generates HTML reports from the PHPUnit output file -->
+    <target name="test-reports" depends="test">
+
+        <phpunitreport infile="${build.dir}/tests/logfile.xml"
+            styledir="${pear.data.dir}/phing/etc"
+            format="frames"
+            todir="${build.dir}/tests"/>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This target sets up storing coverage info during tests -->
+    <target name="coverage-setup">
+        <mkdir dir="${build.dir}/coverage"/>
+
+		<adhoc-task name="stub-autoload"><![CDATA[
+			class StubAutoloadTask extends Task {
+                function main() {
+                    function __autoload($class) {
+                        require(str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php'); }
+                    }
+			}
+		]]></adhoc-task>
+	
+		<stub-autoload/>
+
+        <coverage-setup database="${build.dir}/coverage/coverage.db">
+            <fileset refid="source.code"/>
+        </coverage-setup>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This target generates HTML reports from the coverage output file -->
+    <target name="coverage-reports" depends="test">
+
+        <coverage-report outfile="${build.dir}/coverage/coverage.xml">
+            <report todir="${build.dir}/coverage"
+                styledir="${pear.data.dir}/phing/etc"/>
+        </coverage-report>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- 
+         This target runs CodeSniffer on all source code and generates a
+         checkstyle output file
+    -->
+    <target name="sniffer">
+
+        <taskdef name="myphpcodesniffer" classname="phing.tasks.MyPhpCodeSnifferTask" />
+
+        <!--
+             PHP_CodeSniffer does a chdir(), so we need to use absolute paths
+        -->
+
+        <myphpcodesniffer
+            standard="${project.basedir}/config/CodeSniffer/Example"
+            showWarnings="false"
+            haltonfailure="true"
+            format="report"
+            outfile="${project.basedir}/${build.dir}/codesniffer/checkstyle.xml">
+
+            <fileset dir="${project.basedir}/application" >
+                <include name="lib/**/*.php"/>
+                <include name="models/**/*.php"/>
+                <include name="controllers/**/*.php"/>
+            </fileset>
+        </myphpcodesniffer>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- 
+         This target generates HTML reports from the CodeSniffer output file
+    -->
+    <target name="sniffer-reports" depends="sniffer">
+
+        <taskdef name="checkstyle-report" classname="phing.tasks.CheckstyleReportTask" />
+
+        <checkstyle-report infile="${build.dir}/codesniffer/checkstyle.xml"
+            styledir="config/phing/etc"
+            format="frames-errors"
+            todir="${build.dir}/codesniffer"/>
+
+    </target>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+    <!-- This is the main target that calls other targets via dependencies -->
+    <target name="main" depends="lint, test-reports, sniffer-reports">
+
+        <if><isset property="env.BUILD_NUMBER" />
+        <then>
+            <property name="version"
+                value="revision ${env.SVN_REVISION} build ${env.BUILD_NUMBER}" />
+            <echo msg="Creating version.txt with version: ${version}" /> 
+            <echo file="application/web/version.txt">${version}
+</echo>
+        </then>
+        </if>
+
+        <echo msg="Build successful!" />
+    </target>
+
+</project>
