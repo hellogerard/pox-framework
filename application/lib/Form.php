@@ -20,6 +20,9 @@
  * Inspekt home: http://inspekt.org
  * Inspekt filter methods:
  * http://funkatron.com/inspekt/user_docs/#List-of-test-and-filter-methods
+ *
+ * NB: Zend_Filter_Input is now deprecated. Inspekt could solely back this Form
+ * class if need be.
  */
 
 class Form extends Zend_Filter_Input
@@ -29,12 +32,30 @@ class Form extends Zend_Filter_Input
 
     public function __construct($validators, $input)
     {
+        // Zend_Filter_Input requires that ALL input fields be present in
+        // $validators. Even optional fields must be included with a
+        //
+        //      array('allowEmpty' => true)
+        //
+        // validator. For convenience, let's add these here for optional fields.
+        $validatorKeys = array_keys($validators);
+        $inputKeys = array_keys($input);
+        $optionalKeys = array_diff($inputKeys, $validatorKeys);
+
+        foreach ($optionalKeys as $key)
+        {
+            $validators[$key] = array('allowEmpty' => true);
+        }
+
+        // We will apply one global filter: trim whitespace.
+        $filters = array('*' => 'StringTrim');
+
         // call the Zend_Filter_Input constructor
         parent::__construct($filters, $validators, $input);
     }
 
     /**
-     * this function validates the form.  if simple calls 
+     * This function validates the form.  if simple calls 
      * Zend_Filter_Input::isValid(), but capture the result. if the result is 
      * success, it creates the Inspekt cage around the input before returning 
      * true.
@@ -88,7 +109,7 @@ class Form extends Zend_Filter_Input
         }
         else
         {
-            throw new Form_Exception(__CLASS__ . "::isValid() must be called first");
+            throw new Exception(__CLASS__ . "::isValid() must be called first");
         }
     }
 
@@ -105,7 +126,7 @@ class Form extends Zend_Filter_Input
         }
         else
         {
-            throw new Form_Exception(__CLASS__ . "::isValid() must be called first");
+            throw new Exception(__CLASS__ . "::isValid() must be called first");
         }
     }
 

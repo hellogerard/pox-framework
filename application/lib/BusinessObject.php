@@ -106,6 +106,21 @@ abstract class BusinessObject
         $this->_factory()->put($this);
     }
 
+    // since data will be set to the database, we need ability to  "hydrate"
+    // this object so the saved data will be complete, even if most of it has
+    // not changed.
+    public function hydrate()
+    {
+        if (! $this->_data)
+        {
+            $this->_data = $this->load();
+        }
+        else
+        {
+            $this->_data = array_merge($this->_data, $this->load());
+        }
+    }
+
     /*
      * These magic functions are called whenever the following syntax is 
      * executed:
@@ -124,9 +139,19 @@ abstract class BusinessObject
      * See: http://us3.php.net/manual/en/language.oop5.magic.php
      */
 
+    public function __isset($var)
+    {
+        return ($this->_data[$var] !== null);
+    }
+
+    public function __unset($var)
+    {
+        $this->_data[$var] = null;
+    }
+
     public function __set($var, $value)
     {
-        $func = "set" . $var;
+        $func = "set" . TextUtilities::underscoreToCamelCase($var);
 
         if (method_exists($this, $func))
         {
@@ -137,9 +162,8 @@ abstract class BusinessObject
             $this->_data[$var] = $value;
         }
 
-        // if data has been set to the database, we need to invalidate this 
-        // object so that it can be refreshed by the next client
-        // (should this call _save() also?)
+        // since data will be set to the database, we need to invalidate this
+        // object so that it can be refreshed by the next client.
         $this->_invalidate();
     }
 
@@ -168,6 +192,9 @@ abstract class BusinessObject
             if (isset($this->_typeHint))
             {
                 $this->_dataTypes[$var] = $this->_typeHint;
+                $this->_typeHint = null; // magic methods will be used on an
+                                         // object member that is unset. work
+                                         // around by setting to null
             }
 
             // if data has been fetched from the DB, the updated object must be 
@@ -178,9 +205,9 @@ abstract class BusinessObject
         // now, data to be returned was either retrieved by this business object, 
         // or was already cached in this object. return it.
 
-        // if data is a list, use the _collect function for lazy instantiation 
-        // and paging
-        if (is_array($this->_data[$var]))
+        // if data is a list of business objects, use the _collect function for
+        // lazy instantiation and paging
+        if (is_array($this->_data[$var]) && isset($this->_dataTypes[$var]))
         {
             return $this->_collect($this->_data[$var], $this->_dataTypes[$var]);
         }

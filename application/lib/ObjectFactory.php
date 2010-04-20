@@ -38,7 +38,7 @@ class ObjectFactory
         // this class hard-coded for eaccelerator
         if ($this->_caching && ! extension_loaded('eAccelerator'))
         {
-            throw new ObjectFactory_Exception("could not find eAccelerator extension");
+            throw new Exception("could not find eAccelerator extension");
         }
 
         // grab logger for convenience
@@ -57,7 +57,7 @@ class ObjectFactory
         // at least one arg is required: the class name
         if (empty($args))
         {
-            throw new ObjectFactory_Exception("could not find class definition");
+            throw new Exception("could not find class definition");
         }
 
         // if more than one arg given, the remaining args is used as args for 

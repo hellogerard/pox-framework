@@ -17,6 +17,7 @@ Pox includes some or all of the following open-source software:
 - PEAR (<http://pear.php.net>)
 - Zend Framework (<http://framework.zend.com>)
 - Phing build system (<http://phing.info>)
+- Inspekt filter library (<http://inspekt.org>)
 
 
 Configuring Apache

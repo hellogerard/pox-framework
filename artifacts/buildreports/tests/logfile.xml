@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" tests="5" failures="0" errors="0" time="0.225973">
+    <testcase name="testSet" class="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" line="61" time="0.220257"/>
+    <testcase name="testGetViaLoad" class="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" line="67" time="0.000924"/>
+    <testcase name="testGetViaSpecial" class="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" line="72" time="0.001024"/>
+    <testcase name="testGetCollection" class="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" line="77" time="0.002175"/>
+    <testcase name="testGetPaging" class="BusinessObjectTest" file="C:\work\Pox-Framework\application\tests\lib\BusinessObjectTest.php" line="86" time="0.001593"/>
+  </testsuite>
+  <testsuite name="ErrorsTest" file="C:\work\Pox-Framework\application\tests\lib\ErrorsTest.php" tests="2" failures="0" errors="0" time="0.055005">
+    <testcase name="testPHPError" class="ErrorsTest" file="C:\work\Pox-Framework\application\tests\lib\ErrorsTest.php" line="22" time="0.049522"/>
+    <testcase name="testPEARError" class="ErrorsTest" file="C:\work\Pox-Framework\application\tests\lib\ErrorsTest.php" line="33" time="0.005483"/>
+  </testsuite>
+  <testsuite name="FormTest" file="C:\work\Pox-Framework\application\tests\lib\FormTest.php" tests="3" failures="0" errors="0" time="0.258046">
+    <testcase name="testGoodInput" class="FormTest" file="C:\work\Pox-Framework\application\tests\lib\FormTest.php" line="20" time="0.244277"/>
+    <testcase name="testBadInput" class="FormTest" file="C:\work\Pox-Framework\application\tests\lib\FormTest.php" line="40" time="0.008294"/>
+    <testcase name="testHTMLEntities" class="FormTest" file="C:\work\Pox-Framework\application\tests\lib\FormTest.php" line="59" time="0.005475"/>
+  </testsuite>
+  <testsuite name="ObjectFactoryTest" file="C:\work\Pox-Framework\application\tests\lib\ObjectFactoryTest.php" tests="3" failures="0" errors="0" time="0.002812">
+    <testcase name="testGet" class="ObjectFactoryTest" file="C:\work\Pox-Framework\application\tests\lib\ObjectFactoryTest.php" line="32" time="0.000901"/>
+    <testcase name="testPut" class="ObjectFactoryTest" file="C:\work\Pox-Framework\application\tests\lib\ObjectFactoryTest.php" line="38" time="0.000994"/>
+    <testcase name="testRm" class="ObjectFactoryTest" file="C:\work\Pox-Framework\application\tests\lib\ObjectFactoryTest.php" line="49" time="0.000917"/>
+  </testsuite>
+  <testsuite name="UtilitiesTest" file="C:\work\Pox-Framework\application\tests\lib\UtilitiesTest.php" tests="1" failures="0" errors="0" time="0.014078">
+    <testcase name="testEncryptDecrypt" class="UtilitiesTest" file="C:\work\Pox-Framework\application\tests\lib\UtilitiesTest.php" line="9" time="0.014078"/>
+  </testsuite>
+  <testsuite name="Validate_AgeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\AgeTest.php" fullPackage="Validate" tests="3" failures="0" errors="0" time="0.038622">
+    <testcase name="testInvalidDate" class="Validate_AgeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\AgeTest.php" line="9" time="0.028507"/>
+    <testcase name="testTooYoung" class="Validate_AgeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\AgeTest.php" line="18" time="0.007322"/>
+    <testcase name="testValid" class="Validate_AgeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\AgeTest.php" line="28" time="0.002793"/>
+  </testsuite>
+  <testsuite name="Validate_EqualsTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\EqualsTest.php" fullPackage="Validate" tests="3" failures="0" errors="0" time="0.012964">
+    <testcase name="testNotEqualValue" class="Validate_EqualsTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\EqualsTest.php" line="9" time="0.006360"/>
+    <testcase name="testNotEqualType" class="Validate_EqualsTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\EqualsTest.php" line="18" time="0.005937"/>
+    <testcase name="testEqual" class="Validate_EqualsTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\EqualsTest.php" line="27" time="0.000667"/>
+  </testsuite>
+  <testsuite name="Validate_ZipcodeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\ZipcodeTest.php" fullPackage="Validate" tests="2" failures="0" errors="0" time="0.017665">
+    <testcase name="testNotZipcode" class="Validate_ZipcodeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\ZipcodeTest.php" line="9" time="0.016651"/>
+    <testcase name="testValid" class="Validate_ZipcodeTest" file="C:\work\Pox-Framework\application\tests\lib\Validate\ZipcodeTest.php" line="18" time="0.001014"/>
+  </testsuite>
+</testsuites>

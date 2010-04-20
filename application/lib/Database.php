@@ -9,13 +9,15 @@
 
 class Database
 {
-    private $_conn;
+    private $_reader;
+    private $_writer;
     private $_config;
     private $_logger;
 
     public function __construct()
     {
-        $this->_conn = null;
+        $this->_reader = null;
+        $this->_writer = null;
 
         // get any and all DB connection parameters
         $this->_config = Zend_Registry::get('config');
@@ -23,57 +25,93 @@ class Database
         // this class hard-coded for mysqli
         if (! extension_loaded('mysqli'))
         {
-            throw new Database_Exception("could not find mysqli extension");
+            throw new Exception("could not find mysqli extension");
         }
 
         // use a logger helper for convenience
         $this->_logger = Zend_Registry::get('logger');
     }
 
-    private function _getConnection()
+    private function _getReadConnection()
     {
-        $this->_conn = mysqli_init();
+        $this->_reader = mysqli_init();
 
-        $masters = array();
+        $slaves = array();
         $i = 0;
-        $master = "master$i";
+        $slave = "slave$i";
 
-        // gather connection info for each configured master
-        while (isset($this->_config->database->$master))
+        // gather connection info for each configured slave
+        while (isset($this->_config->database->$slave))
         {
-            $masters[] = $this->_config->database->$master;
-            $master = "master" . ++$i;
+            $slaves[] = $this->_config->database->$slave;
+            $slave = "slave" . ++$i;
         }
 
-        // randomly pick a master to connect to. if the first one fails, try the 
+        // randomly pick a slave to connect to. if the first one fails, try the 
         // next one, and so on
-        shuffle($masters);
-        while (($master = array_shift($masters)) !== null)
+        shuffle($slaves);
+        while (($slave = array_shift($slaves)) !== null)
         {
             try
             {
-                if ($this->_conn->real_connect($master->host,
-                                               $master->user,
-                                               $master->password,
-                                               $master->name))
+                if ($this->_reader->real_connect($slave->host,
+                                                 $slave->user,
+                                                 $slave->password,
+                                                 $slave->name))
                 {
-                    $this->_logger->debug("connecting to {$master->host}");
-                    $this->_conn->query("set names utf8");
-                    $this->_conn->query("set character_set utf8");
+                    $this->_logger->debug("connecting to {$slave->host}");
+                    $this->_reader->query("set names utf8");
+                    $this->_reader->query("set character_set utf8");
                     return;
                 }
             }
             catch (PHPException $e)
             {
-                $this->_logger->warning("could not connect to master database: " . $e->getMessage());
+                $this->_logger->warning("could not connect to slave database: " . $e->getMessage());
             }
 
-            shuffle($masters);
+            shuffle($slaves);
         }
 
-        // if all masters fail to connect, throw exception
-        $this->_conn = null;
-        throw new Database_Exception("could not connect to master database: " . $e->getMessage());
+        // if all slaves fail to connect, try the master
+        try
+        {
+            $this->_getWriteConnection();
+        }
+        catch (Exception $e)
+        {
+            $this->_reader = null;
+            throw $e;
+        }
+
+        $this->_reader = $this->_writer;
+    }
+
+    private function _getWriteConnection()
+    {
+        $this->_writer = mysqli_init();
+
+        // there should only be one "write" database
+        $master = $this->_config->database->master;
+
+        try
+        {
+            if ($this->_writer->real_connect($master->host,
+                                             $master->user,
+                                             $master->password,
+                                             $master->name))
+            {
+                $this->_logger->debug("connecting to {$master->host}");
+                $this->_writer->query("set names utf8");
+                $this->_writer->query("set character_set utf8");
+                return;
+            }
+        }
+        catch (PHPException $e)
+        {
+            $this->_writer = null;
+            throw new Exception("could not connect to master database: " . $e->getMessage());
+        }
     }
 
     private function _escape($sql, $bind)
@@ -94,7 +132,8 @@ class Database
 
                 if (is_string($param))
                 {
-                    $sql .= "'" . $this->_conn->real_escape_string($param) . "'";
+                    $conn = (is_null($this->_reader)) ? $this->_writer : $this->_reader;
+                    $sql .= "'" . $conn->real_escape_string($param) . "'";
                 }
                 else if (is_bool($param))
                 {
@@ -118,12 +157,12 @@ class Database
 
                 if ($i + 1 != sizeof($sqlpieces))
                 {
-                    throw new Database_Exception("could not prepare statment due to parameter mismatch");
+                    throw new Exception("could not prepare statment due to parameter mismatch");
                 }
             }
             else if ($i != sizeof($sqlpieces))    
             {
-                throw new Database_Exception("could not prepare statment due to parameter mismatch");
+                throw new Exception("could not prepare statment due to parameter mismatch");
             }
         }
 
@@ -139,9 +178,9 @@ class Database
     private function _execute($sql, $bind = null)
     {
         // if no DB connection yet, connect
-        if ($this->_conn === null)
+        if ($this->_reader === null)
         {
-            $this->_getConnection();
+            $this->_getReadConnection();
         }
 
         $this->_logger->debug("executing SQL: $sql");
@@ -149,9 +188,9 @@ class Database
         $this->_logger->debug($bind);
 
         // execute the select statement
-        if (! ($result = $this->_conn->query($this->_escape($sql, $bind))))
+        if (! ($result = $this->_reader->query($this->_escape($sql, $bind))))
         {
-            throw new Database_Exception("could not execute SQL: " . $this->_conn->error);
+            throw new Exception("could not execute SQL: " . $this->_reader->error);
         }
 
         return $result;
@@ -203,14 +242,25 @@ class Database
     }
 
     /**
+     * returns the first result of a result set
+     */
+
+    public function getRow($sql, $bind = null)
+    {
+        $results = $this->getRows($sql, $bind);
+
+        return (empty($results)) ? $results : $results[0];
+    }
+
+    /**
      * executes a DML statemtent i.e. insert, update, or delete
      */
 
     public function query($sql, $bind = null)
     {
-        if ($this->_conn === null)
+        if ($this->_writer === null)
         {
-            $this->_getConnection();
+            $this->_getWriteConnection();
         }
 
         $this->_logger->debug("executing DML: $sql");
@@ -218,9 +268,9 @@ class Database
         $this->_logger->debug($bind);
 
         // execute the DML statement
-        if (! $this->_conn->query($this->_escape($sql, $bind)))
+        if (! $this->_writer->query($this->_escape($sql, $bind)))
         {
-            throw new Database_Exception("could not execute DML: " . $this->_conn->error);
+            throw new Exception("could not execute DML: " . $this->_writer->error);
         }
 
         return true;
@@ -228,35 +278,45 @@ class Database
 
     public function startTransaction()
     {
-        if ($this->_conn === null)
+        if ($this->_writer === null)
         {
-            $this->_getConnection();
+            $this->_getWriteConnection();
         }
 
-        $this->_conn->autocommit(false);
+        $this->_writer->autocommit(false);
         $this->query('start transaction');
     }
 
     public function commit()
     {
-        $this->_conn->commit();
-        $this->_conn->autocommit(true);
+        $this->_writer->commit();
+        $this->_writer->autocommit(true);
     }
 
     public function rollback()
     {
-        $this->_conn->rollback();
-        $this->_conn->autocommit(true);
+        $this->_writer->rollback();
+        $this->_writer->autocommit(true);
     }
 
     public function lastInsertId()
     {
-        if ($this->_conn === null || ($ret = $this->_conn->insert_id) === 0)
+        if ($this->_writer === null || ($ret = $this->_writer->insert_id) === 0)
         {
-            throw new Database_Exception("could not retrieve last insert ID: " . $this->_conn->error);
+            throw new Exception("could not retrieve last insert ID: " . $this->_writer->error);
         }
 
         return $ret;
+    }
+
+    public function affectedRows()
+    {
+        if ($this->_writer === null)
+        {
+            throw new Exception("could not retrieve affected row count: " . $this->_writer->error);
+        }
+    
+        return $this->_writer->affected_rows;
     }
 }
 

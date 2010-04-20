@@ -23,7 +23,7 @@ class Post_Comment extends BusinessObject
     // since getTime() requires special logic, we can override this behavior here
     public function getTime()
     {
-        return strtotime($this->_data['create_dt_tm']);
+        return strtotime($this->create_dt_tm);
     }
 
     public function save()
@@ -35,10 +35,10 @@ class Post_Comment extends BusinessObject
                     values
                     (null, ?, ?, ?, ?)";
 
-        $bind = array($this->_data['post_id'],
-                      $this->_data['name'],
-                      $this->_data['comment'], 
-                      $this->_data['create_dt_tm']);
+        $bind = array($this->post_id,
+                      $this->name,
+                      $this->comment, 
+                      $this->create_dt_tm);
 
         $this->_db()->query($sql, $bind);
     }

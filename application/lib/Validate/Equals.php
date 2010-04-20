@@ -14,25 +14,28 @@ class Validate_Equals extends Zend_Validate_Abstract
 
     // error messages
     protected $_messageTemplates = array(
-        self::NOT_EQUAL => "'%value1%' and '%value2%' are not equal"
+        self::NOT_EQUAL => "'%aValue%' and '%value%' are not equal"
     );
 
     // these map the error message variables to class variables
     protected $_messageVariables = array(
-        'value1' => '_value1',
-        'value2' => '_value2'
+        'aValue' => '_aValue',
     );
 
-    // class variables to hold input data
-    protected $_value1;
-    protected $_value2;
+    protected $_aValue;
+
+    public function __construct($aValue)
+    {
+        $this->_aValue = $aValue;
+    }
 
     public function isValid($value)
     {
-        list($this->_value1, $this->_value2) = array_values($value);
+        // this line populates the "%value%" variables in the error messages
+        $this->_setValue($value);
 
         // test type too
-        if ($this->_value1 === $this->_value2)
+        if ($this->_aValue === $value)
         {
             return true;
         }

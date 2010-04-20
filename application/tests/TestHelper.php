@@ -32,12 +32,11 @@ set_include_path('.'
 $config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', 'development');
 Zend_Registry::set('config', $config);
 
-// get a new logger and save it in registry
-$logger = new Logger();
+// use a null logger for unit tests
+$logger = new Mock_Logger();
 Zend_Registry::set('logger', $logger);
 
-// get a new db and save it in registry
-$db = new TestDatabase();
+// use a mock database for unit tests
+$db = new Mock_Database();
 Zend_Registry::set('db', $db);
 
-?>

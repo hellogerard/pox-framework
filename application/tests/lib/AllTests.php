@@ -25,6 +25,7 @@ class Lib_AllTests
         $suite->addTestSuite('ObjectFactoryTest');
         $suite->addTestSuite('ErrorsTest');
         $suite->addTestSuite('FormTest');
+        $suite->addTestSuite('UtilitiesTest');
 
         return $suite;
     }

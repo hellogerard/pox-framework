@@ -10,8 +10,6 @@ class ErrorsTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', 'development');
-        Zend_Registry::set('config', $config);
         new Errors();
     }
 

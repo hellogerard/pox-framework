@@ -10,6 +10,10 @@
 abstract class Controller
 {
     public $view;
+    public $env;
+    public $module;
+    public $domain;
+
     protected $_logger;
     protected $_factory;
 
@@ -18,18 +22,59 @@ abstract class Controller
         // convenience variables
         $this->_logger = Zend_Registry::get('logger');
         $this->_factory = Zend_Registry::get('factory');
+
         $this->view = new SmartyView();
+
+        // set the environment variable
+        $this->env = Zend_Registry::get('config')->getSectionName();
+        $this->view->env = $this->env;
+
+        // set the module (the tab) we're on
+        $this->module = $module;
+        $this->view->module = $this->module;
+
+        // set the base domain
+        // e.g. returns "zipscene.com" from "www.zipscene.com"
+        preg_match('/[^\.]+\.[^\.]+$/', $_SERVER['HTTP_HOST'], $matches);
+        $this->domain = $matches[0];
+        $this->view->domain = $this->domain;
+
+        // are we on a mobile device?
+        $this->view->isMobile = Utilities::isMobile($_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
-     * This method is called if a non-existent method (i.e. action) is called on 
+     * This method is called before the action. For example, use this function
+     * to check for authorization.
+     */
+
+    public function preDispatch()
+    {
+        if ($this->env == 'production')
+        {
+            // send request to GA (this needs to be in preDispatch because it
+            // sets cookie headers)
+            GoogleAnalytics::track();
+        }
+    }
+
+    /**
+     * This method is called after the action. For example, use this function
+     * for analytics code.
+     */
+
+    public function postDispatch()
+    {
+    }
+
+    /**
+     * This method is called if a non-existent method (i.e. action) is called on
      * this object.
      */
 
     public function __call($action, $args)
     {
-        header('HTTP/1.0 404 Not Found');
-        exit;
+        Router::notFound();
     }
 }
 

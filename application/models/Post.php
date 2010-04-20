@@ -23,7 +23,7 @@ class Post extends BusinessObject
     // since getTime() requires special logic, we can override this behavior here
     public function getTime()
     {
-        return strtotime($this->_data['create_dt_tm']);
+        return strtotime($this->create_dt_tm);
     }
 
     public function getComments()
@@ -72,11 +72,11 @@ class Post extends BusinessObject
                     body = ?";
 
         $bind = array($this->_id,
-                      $this->_data['title'],
-                      $this->_data['body'], 
-                      $this->_data['create_dt_tm'],
-                      $this->_data['title'], 
-                      $this->_data['body']);
+                      $this->title,
+                      $this->body, 
+                      $this->create_dt_tm,
+                      $this->title, 
+                      $this->body);
 
         $this->_db()->query($sql, $bind);
     }

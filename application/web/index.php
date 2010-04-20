@@ -43,7 +43,9 @@ Zend_Registry::set('db', $db);
 $factory = new ObjectFactory();
 Zend_Registry::set('factory', $factory);
 
+session_start();
+
 // run the request
 Router::route($_SERVER['REQUEST_URI']);
 
-?>
+session_write_close();

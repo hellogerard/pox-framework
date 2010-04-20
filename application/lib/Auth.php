@@ -1,62 +1,133 @@
 <?php
 
-/**
- * Let's add more comments.
- * This class authenticates a user using a username and password.
- */
-
-class Auth implements Zend_Auth_Adapter_Interface
+class Auth
 {
-    private $_tableName;
-    private $_identityColumn;
-    private $_credentialColumn;
-
-    private $_identity;
-    private $_credential;
-
-    public function __set($var, $value)
+    private static function _db()
     {
-        // let's use the magic method where possible to have as little code as 
-        // possible
-        $var = "_$var";
-        $this->$var = $value;
+        return Zend_Registry::get('db');
     }
 
-    public function authenticate()
+    public static function loginWithRememberMe($username, $password)
     {
-        $sql = 'SELECT '.$this->_identityColumn.'
-                FROM '.$this->_tableName.'
-                WHERE '.$this->_identityColumn.' = ? AND '.$this->_credentialColumn.' = ?';
+        return self::login($username, $password, true);
+    }
 
-        try
+    public static function login($username, $password, $rememberMe = false)
+    {
+        // check the database for this user
+        $sql =  "select user_id
+                   from users
+                  where email = ? and password = md5(concat(salt, ?))";
+
+        $result = self::_db()->getOne($sql, array($username, $password));
+
+        // if login successful
+        if ($result)
         {
-            $bind = array($this->_identity, md5($this->_credential));
-            // just use the global source
-            $result = Zend_Registry::get('db')->getRows($sql, $bind);
-        }
-        catch (Exception $e)
-        {
-            throw new Zend_Auth_Adapter_Exception($e->getMessage());
+            $rand = md5(uniqid(rand(), true));
+
+            // hash the client IP address, along with a random ID.  this becomes
+            // the session token for this user. as long as the row exists in the
+            // DB, we can auto-login the session.
+
+            $token = md5($_SERVER['REMOTE_ADDR'] . $rand);
+
+            $sql = "insert into sessions
+                        (session_token, user_id) values (?, ?)
+                        on duplicate key update session_token = ?";
+ 
+            $bind = array($token, $result, $token);
+
+            self::_db()->query($sql, $bind);
+
+            if ($rememberMe)
+            {
+                // set the "remember me" cookie
+                $expires = time() + 604800; // 604800 seconds = 1 week
+                $domain = $_SERVER['HTTP_HOST'];
+                setcookie('gm_remember_me', $rand, $expires, '/', $domain);
+            }
+
+            $_SESSION['gm_username'] = $username;
+
+            return true;
         }
 
-        $rows = count($result);
+        // else login failed
+        return false;
+    }
 
-        if ($rows == 0)
+    public static function isLoggedIn()
+    {
+        if (isset($_SESSION['gm_username']))
         {
-            $code = Zend_Auth_Result::FAILURE_IDENTITY_NOT_FOUND;
-            $message = 'Login failed.';
-        }
-        else if ($rows > 1)
-        {
-            $code = Zend_Auth_Result::FAILURE_IDENTITY_AMBIGUOUS;
-            $message = 'Login failed.';
-        }
-        else
-        {
-            $code = Zend_Auth_Result::SUCCESS;
-            $message = 'Login succesful.';
+            return $_SESSION['gm_username'];
         }
 
-        return new Zend_Auth_Result($code, $this->_identity, array($message));
+        // session is gone when either:
+        // - browser session cookie has timed out
+        // - server session file has been garbage collected
+        // - user clicked on logout
+
+        // check for "remember me" cookie
+        if (isset($_COOKIE['gm_remember_me']))
+        {
+            // we have to see if this user has a valid session, from the same
+            // computer. create a hash using the client IP, and user_id.  look
+            // for a match in DB.
+
+            $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['gm_remember_me']);
+
+            $sql =  "select u.email
+                       from users u
+                                join sessions s on u.user_id = s.user_id
+                      where s.session_token = ?";
+
+            $result = self::_db()->getOne($sql, array($token));
+
+            // if a valid session is found
+            if ($result)
+            {
+                // recreate session
+                session_regenerate_id();
+
+                $sql = "update sessions set last_updated_dt_tm = now()
+                            where session_token = ?";
+
+                self::_db()->query($sql, array($token));
+
+                return $result;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    public static function logout()
+    {
+        // log user out natively
+        session_unset();
+        session_destroy();
+
+
+        // clear the session in the DB
+        $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['gm_remember_me']);
+        $sql =  "delete from sessions where session_token = ?";
+        self::_db()->query($sql, array($token));
+
+
+        // clear the "remember me" cookie
+        $domain = $_SERVER['HTTP_HOST'];
+        setcookie('gm_remember_me', '', time() - 3600, '/', $domain);
+
+
+        header("HTTP/1.1 302 Found");
+        header("Location: /");
+        exit;
     }
 }
+
