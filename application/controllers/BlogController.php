@@ -46,8 +46,8 @@ class BlogController extends Controller
 
                 $comment = $this->_factory->get('Post_Comment');
                 $comment->post_id = $id;
-                $comment->name = $form->getHTMLEntities('name');
-                $comment->comment = $form->getHTMLEntities('aComment');
+                $comment->name = $form->getRaw('name');
+                $comment->comment = $form->getRaw('aComment');
                 $comment->create_dt_tm = date('Y-m-d H:i:s');
                 $comment->save();
                 header("Location: /blog/view/$id");
@@ -115,8 +115,8 @@ class BlogController extends Controller
                 $this->_logger->debug("form at {$_SERVER['REQUEST_URI']} successful ");
 
                 $post = $this->_factory->get('Post', $id);
-                $post->title = $form->getHTMLEntities('aTitle');
-                $post->body = $form->getHTMLEntities('aBody');
+                $post->title = $form->getRaw('aTitle');
+                $post->body = $form->getRaw('aBody');
                 $post->create_dt_tm = date('Y-m-d H:i:s');
                 $post->save();
                 header('Location: /blog');

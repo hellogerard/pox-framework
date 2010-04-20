@@ -16,8 +16,12 @@ class Post_Comment extends BusinessObject
 
         $sql = "select * from comments where comment_id = ? limit 1";
 
-        $data = $this->_db()->getRows($sql, array($this->_id));
-        return $data[0];
+        $data = $this->_db()->getRow($sql, array($this->_id));
+
+        $data['name'] = TextUtilities::escape($data['name']);
+        $data['comment'] = TextUtilities::escape($data['comment']);
+
+        return $data;
     }
 
     // since getTime() requires special logic, we can override this behavior here

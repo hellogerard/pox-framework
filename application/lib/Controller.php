@@ -34,13 +34,10 @@ abstract class Controller
         $this->view->module = $this->module;
 
         // set the base domain
-        // e.g. returns "zipscene.com" from "www.zipscene.com"
+        // e.g. returns "example.com" from "www.example.com"
         preg_match('/[^\.]+\.[^\.]+$/', $_SERVER['HTTP_HOST'], $matches);
         $this->domain = $matches[0];
         $this->view->domain = $this->domain;
-
-        // are we on a mobile device?
-        $this->view->isMobile = Utilities::isMobile($_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
@@ -50,12 +47,6 @@ abstract class Controller
 
     public function preDispatch()
     {
-        if ($this->env == 'production')
-        {
-            // send request to GA (this needs to be in preDispatch because it
-            // sets cookie headers)
-            GoogleAnalytics::track();
-        }
     }
 
     /**

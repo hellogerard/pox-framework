@@ -16,8 +16,12 @@ class Post extends BusinessObject
 
         $sql = "select * from posts where post_id = ? limit 1";
 
-        $data = $this->_db()->getRows($sql, array($this->_id));
-        return $data[0];
+        $data = $this->_db()->getRow($sql, array($this->_id));
+
+        $data['title'] = TextUtilities::escape($data['title']);
+        $data['body'] = TextUtilities::escape($data['body']);
+
+        return $data;
     }
 
     // since getTime() requires special logic, we can override this behavior here
@@ -31,7 +35,7 @@ class Post extends BusinessObject
         $this->_logger()->debug(__CLASS__ . '::' . __METHOD__);
 
         $sql =  "select comment_id from comments where post_id = ?";
-                        
+
         // must set the type of returned objects
         $this->_hint('Post_Comment');
 
