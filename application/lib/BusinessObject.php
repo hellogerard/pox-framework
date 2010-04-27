@@ -117,7 +117,7 @@ abstract class BusinessObject
         }
         else
         {
-            $this->_data = array_merge($this->_data, $this->load());
+            $this->_data = array_merge($this->load(), $this->_data);
         }
     }
 
@@ -155,12 +155,10 @@ abstract class BusinessObject
 
         if (method_exists($this, $func))
         {
-            $this->$func($value);
+            $value = $this->$func($value);
         }
-        else
-        {
-            $this->_data[$var] = $value;
-        }
+
+        $this->_data[$var] = $value;
 
         // since data will be set to the database, we need to invalidate this
         // object so that it can be refreshed by the next client.
