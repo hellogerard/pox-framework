@@ -141,7 +141,12 @@ abstract class BusinessObject
 
     public function __isset($var)
     {
-        return ($this->_data[$var] !== null);
+        if (isset($this->_data[$var]) && $this->_data[$var] !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function __unset($var)
@@ -200,12 +205,18 @@ abstract class BusinessObject
             $this->_save();
         }
 
+        // if data does not exist after above attempts, return null
+        if (! isset($this->_data[$var]))
+        {
+            return null;
+        }
+
         // now, data to be returned was either retrieved by this business object, 
         // or was already cached in this object. return it.
 
         // if data is a list of business objects, use the _collect function for
         // lazy instantiation and paging
-        if (is_array($this->_data[$var]) && isset($this->_dataTypes[$var]))
+        else if (is_array($this->_data[$var]) && isset($this->_dataTypes[$var]))
         {
             return $this->_collect($this->_data[$var], $this->_dataTypes[$var]);
         }
