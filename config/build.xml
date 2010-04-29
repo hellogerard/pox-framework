@@ -7,7 +7,7 @@
          http://phing.info/trac/wiki/Users/Download (installation)
 -->
 
-<project name="My Project" basedir=".." default="main">
+<project name="My Project" basedir="." default="main">
 
     <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- +++++++++++++++ Configuration +++++++++++++++++++++++++++++++++++++ -->
@@ -53,7 +53,7 @@
 
     <!-- This target runs `php -l` on the fileset -->
     <target name="lint">
-        <phplint haltonfailure="true">
+        <phplint haltonfailure="true" level="verbose">
             <fileset refid="source.code"/>
         </phplint>
     </target>
@@ -64,13 +64,14 @@
 
 
     <!-- This target runs all unit tests in the fileset -->
-    <target name="test">
+    <target name="test" depends="coverage-setup">
         <mkdir dir="${build.dir}/tests"/>
 
-        <phpunit codecoverage="false" haltonfailure="true" printsummary="true">
+        <phpunit codecoverage="true" haltonfailure="true" haltonerror="true" printsummary="true">
             <batchtest>
                 <fileset refid="unit.tests"/>
             </batchtest>
+            <formatter type="plain" usefile="false"/>
             <formatter type="xml" todir="${build.dir}/tests" outfile="logfile.xml"/>
         </phpunit>
 
@@ -100,16 +101,16 @@
     <target name="coverage-setup">
         <mkdir dir="${build.dir}/coverage"/>
 
-		<adhoc-task name="stub-autoload"><![CDATA[
-			class StubAutoloadTask extends Task {
+        <adhoc-task name="stub-autoload"><![CDATA[
+            class StubAutoloadTask extends Task {
                 function main() {
                     function __autoload($class) {
                         require(str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php'); }
                     }
-			}
-		]]></adhoc-task>
-	
-		<stub-autoload/>
+            }
+        ]]></adhoc-task>
+
+        <stub-autoload/>
 
         <coverage-setup database="${build.dir}/coverage/coverage.db">
             <fileset refid="source.code"/>
@@ -142,26 +143,22 @@
          checkstyle output file
     -->
     <target name="sniffer">
+        <mkdir dir="${build.dir}/codesniffer"/>
 
-        <taskdef name="myphpcodesniffer" classname="phing.tasks.MyPhpCodeSnifferTask" />
-
-        <!--
-             PHP_CodeSniffer does a chdir(), so we need to use absolute paths
-        -->
-
-        <myphpcodesniffer
-            standard="${project.basedir}/config/CodeSniffer/Example"
+        <phpcodesniffer
+            standard="config/CodeSniffer/Example"
             showWarnings="false"
-            haltonfailure="true"
-            format="report"
-            outfile="${project.basedir}/${build.dir}/codesniffer/checkstyle.xml">
+            haltonerror="true">
 
-            <fileset dir="${project.basedir}/application" >
+            <fileset dir="application" >
                 <include name="lib/**/*.php"/>
                 <include name="models/**/*.php"/>
                 <include name="controllers/**/*.php"/>
             </fileset>
-        </myphpcodesniffer>
+
+            <formatter type="full" usefile="false"/>
+            <formatter type="checkstyle" outfile="${build.dir}/codesniffer/checkstyle.xml"/>
+        </phpcodesniffer>
 
     </target>
 
@@ -190,7 +187,8 @@
 
 
     <!-- This is the main target that calls other targets via dependencies -->
-    <target name="main" depends="lint, test-reports, sniffer-reports">
+    <target name="main" depends="lint, test-reports, coverage-reports,
+        sniffer-reports">
 
         <if><isset property="env.BUILD_NUMBER" />
         <then>

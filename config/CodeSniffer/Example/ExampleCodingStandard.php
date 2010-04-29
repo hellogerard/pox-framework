@@ -20,6 +20,7 @@ class PHP_CodeSniffer_Standards_Example_ExampleCodingStandard extends PHP_CodeSn
             'Zend/Sniffs/NamingConventions/ValidVariableNameSniff.php',
             'PEAR/Sniffs/ControlStructures/ControlSignatureSniff.php',
             'PEAR/Sniffs/Files/LineEndingsSniff.php',
+            'PEAR/Sniffs/Functions/FunctionCallSignatureSniff.php',
         );
     }
 }
