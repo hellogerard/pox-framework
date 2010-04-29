@@ -20,6 +20,7 @@ class Mock_Database
 
         $this->_conn = new SQLiteDatabase(":memory:");
 
+        $this->_conn->queryExec('PRAGMA short_column_names = ON');
         $this->_conn->createFunction('lpad', array($this, 'lpad'), 3);
         $this->_conn->createFunction('now', array($this, 'now'));
     }
