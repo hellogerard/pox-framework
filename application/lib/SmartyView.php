@@ -59,8 +59,28 @@ class SmartyView extends Smarty
         return ($this->get_template_vars($var)) ? true : false;
     }
 
+    /**
+     * This method will store a confirmation message for the subsequent request,
+     * and then clear the message after it is used.
+     */
+
+    public function flash($message = null)
+    {
+        if (! empty($message))
+        {
+            $_SESSION['flash'] = $message;
+        }
+        else
+        {
+            $this->flash = $_SESSION['flash'];
+            unset($_SESSION['flash']);
+        }
+    }
+
     public function display($resource_name, $cache_id = null, $compile_id = null)
     {
+        $this->flash();
+
         // we may have some headers to send back after Smarty has started
         // printing contents. so save the output, and send after all processing.
 

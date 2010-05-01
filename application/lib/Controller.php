@@ -39,8 +39,8 @@ abstract class Controller
         $this->domain = $matches[0];
         $this->view->domain = $this->domain;
 
-        // set any confirmation message
-        $this->view->flash = $this->flash();
+        // are we on a mobile device?
+        $this->view->isMobile = Utilities::isMobile($_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
@@ -59,26 +59,6 @@ abstract class Controller
 
     public function postDispatch()
     {
-    }
-
-    /**
-     * This method will store a confirmation message for the subsequent request,
-     * and then clear the message after it is used.
-     */
-
-    public function flash($message = null)
-    {
-        if (! empty($message))
-        {
-            $_SESSION['flash'] = $message;
-        }
-        else
-        {
-            $message = $_SESSION['flash'];
-            unset($_SESSION['flash']);
-        }
-
-        return $message;
     }
 
     /**
