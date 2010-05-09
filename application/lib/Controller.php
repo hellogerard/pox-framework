@@ -38,9 +38,6 @@ abstract class Controller
         preg_match('/[^\.]+\.[^\.]+$/', $_SERVER['HTTP_HOST'], $matches);
         $this->domain = $matches[0];
         $this->view->domain = $this->domain;
-
-        // are we on a mobile device?
-        $this->view->isMobile = Utilities::isMobile($_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
