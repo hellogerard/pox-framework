@@ -45,10 +45,10 @@ class Auth
                 // set the "remember me" cookie
                 $expires = time() + 604800; // 604800 seconds = 1 week
                 $domain = $_SERVER['HTTP_HOST'];
-                setcookie('gm_remember_me', $rand, $expires, '/', $domain);
+                setcookie('pox_remember_me', $rand, $expires, '/', $domain);
             }
 
-            $_SESSION['gm_username'] = $username;
+            $_SESSION['pox_username'] = $username;
 
             return true;
         }
@@ -59,9 +59,9 @@ class Auth
 
     public static function isLoggedIn()
     {
-        if (isset($_SESSION['gm_username']))
+        if (isset($_SESSION['pox_username']))
         {
-            return $_SESSION['gm_username'];
+            return $_SESSION['pox_username'];
         }
 
         // session is gone when either:
@@ -70,13 +70,13 @@ class Auth
         // - user clicked on logout
 
         // check for "remember me" cookie
-        if (isset($_COOKIE['gm_remember_me']))
+        if (isset($_COOKIE['pox_remember_me']))
         {
             // we have to see if this user has a valid session, from the same
             // computer. create a hash using the client IP, and user_id.  look
             // for a match in DB.
 
-            $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['gm_remember_me']);
+            $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['pox_remember_me']);
 
             $sql =  "select u.email
                        from users u
@@ -115,14 +115,14 @@ class Auth
 
 
         // clear the session in the DB
-        $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['gm_remember_me']);
+        $token = md5($_SERVER['REMOTE_ADDR'] . $_COOKIE['pox_remember_me']);
         $sql =  "delete from sessions where session_token = ?";
         self::_db()->query($sql, array($token));
 
 
         // clear the "remember me" cookie
         $domain = $_SERVER['HTTP_HOST'];
-        setcookie('gm_remember_me', '', time() - 3600, '/', $domain);
+        setcookie('pox_remember_me', '', time() - 3600, '/', $domain);
 
 
         header("HTTP/1.1 302 Found");
