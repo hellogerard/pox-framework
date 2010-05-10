@@ -29,18 +29,22 @@ $config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', $env);
 Zend_Registry::set('config', $config);
 
 // get a new logger and save it in registry
-$logger = new Logger();
+$logger = new Logger;
 Zend_Registry::set('logger', $logger);
 
 // set up error handling
-new Errors();
+new Errors;
 
 // get a new database and save it in registry
-$db = new Database();
+$db = new Database;
 Zend_Registry::set('db', $db);
 
+// get a new cache and save it in registry
+$cache = new Cache_Eaccelerator;
+Zend_Registry::set('cache', $cache);
+
 // get a new object factory and save it in registry
-$factory = new ObjectFactory();
+$factory = new ObjectFactory;
 Zend_Registry::set('factory', $factory);
 
 session_start();

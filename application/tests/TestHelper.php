@@ -40,3 +40,7 @@ Zend_Registry::set('logger', $logger);
 $db = new Mock_Database();
 Zend_Registry::set('db', $db);
 
+// use a mock cache for unit tests
+$cache = new Mock_Cache();
+Zend_Registry::set('cache', $cache);
+

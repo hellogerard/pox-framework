@@ -22,8 +22,9 @@ class ObjectFactory
     private $_caching;
     private $_ttl;
 
-    private $_keys;
     private $_cache;
+    private $_keys;
+    private $_request;
     private $_dirty;
     private $_removed;
 
@@ -35,11 +36,8 @@ class ObjectFactory
         $this->_caching = (bool) $config->application->caching->enabled;
         $this->_ttl = (int) $config->application->caching->ttl;
 
-        // this class hard-coded for eaccelerator
-        if ($this->_caching && ! extension_loaded('eAccelerator'))
-        {
-            throw new Exception("could not find eAccelerator extension");
-        }
+        // set the cache backend
+        $this->_cache = Zend_Registry::get('cache');
 
         // grab logger for convenience
         $this->_logger = Zend_Registry::get('logger');
@@ -72,10 +70,10 @@ class ObjectFactory
         $key = $class . serialize($args);
 
         // see if the object has been instantiated in this request already
-        if (isset($this->_cache[$key]))
+        if (isset($this->_request[$key]))
         {
             $this->_logger->debug("$key found in request cache");
-            return $this->_cache[$key];
+            return $this->_request[$key];
         }
 
         // else if this object has been removed in this request, do not create 
@@ -89,7 +87,7 @@ class ObjectFactory
 
         // if caching is off, or if object not found in cache, instantiate a new 
         // object of the class
-        if (! $this->_caching || ($object = eaccelerator_get($key)) === null)
+        if (! $this->_caching || ($object = $this->_cache->get($key)) === null)
         {
             // taken from
             // http://us2.php.net/manual/en/function.call-user-func-array.php#74427
@@ -111,7 +109,7 @@ class ObjectFactory
         }
 
         // save the object in this individual request's "cache"
-        $this->_cache[$key] = $object;
+        $this->_request[$key] = $object;
 
         // save the object key - we'll need it later
         $this->_keys[spl_object_hash($object)] = $key;
@@ -124,7 +122,7 @@ class ObjectFactory
         // get the object's key
         $key = $this->_keys[spl_object_hash($object)];
 
-        unset($this->_cache[$key]);
+        unset($this->_request[$key]);
         $this->_dirty[] = $object;
         $this->_removed[$key] = true;
         $this->_logger->debug("invalidating $key");
@@ -135,7 +133,7 @@ class ObjectFactory
         // get the object's key
         $key = $this->_keys[spl_object_hash($object)];
 
-        $this->_cache[$key] = $object;
+        $this->_request[$key] = $object;
         $this->_dirty[] = $object;
         $this->_logger->debug("$key modified and marked dirty");
     }
@@ -156,15 +154,15 @@ class ObjectFactory
             // get the object's key
             $key = $this->_keys[spl_object_hash($object)];
 
-            if (isset($this->_cache[$key]))
+            if (isset($this->_request[$key]))
             {
                 // save the object to cache
-                eaccelerator_put($key, serialize($object), $this->_ttl);
+                $this->_cache->set($key, serialize($object), $this->_ttl);
             }
             else
             {
                 // delete from cache
-                eaccelerator_rm($key);
+                $this->_cache->delete($key);
             }
         }
     }
