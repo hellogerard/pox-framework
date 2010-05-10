@@ -5,7 +5,7 @@
  * http://www.socialtext.net/memcached/index.cgi?faq#how_to_prevent_clobbering_updates_stampeding_requests
  */
 
-class Cache_Dogpile
+class Cache_Dogpile implements Cache
 {
     private $_caching;
     private $_ttl;

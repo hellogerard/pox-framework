@@ -1,7 +1,7 @@
 <?php
 
 
-class Mock_Cache
+class Mock_Cache implements Cache
 {
     private $_data;
 

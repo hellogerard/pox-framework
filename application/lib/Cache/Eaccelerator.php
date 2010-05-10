@@ -1,6 +1,6 @@
 <?php
 
-class Cache_Eaccelerator
+class Cache_Eaccelerator implements Cache
 {
     private $_caching;
 
