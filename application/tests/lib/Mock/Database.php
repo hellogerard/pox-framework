@@ -23,6 +23,13 @@ class Mock_Database
         $this->_conn->queryExec('PRAGMA short_column_names = ON');
         $this->_conn->createFunction('lpad', array($this, 'lpad'), 3);
         $this->_conn->createFunction('now', array($this, 'now'));
+        $this->_conn->createFunction('field', array($this, 'field'));
+    }
+
+    public function field()
+    {
+        $args = func_get_args();
+        return join(',', $args);
     }
 
     public function lpad($value, $numchars, $char)
