@@ -57,6 +57,11 @@ class Auth
         return false;
     }
 
+    public static function setUsername($username)
+    {
+        $_SESSION['pox_username'] = $username;
+    }
+
     public static function isLoggedIn()
     {
         if (isset($_SESSION['pox_username']))
