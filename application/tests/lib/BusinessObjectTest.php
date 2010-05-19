@@ -11,7 +11,6 @@ class Dog extends BusinessObject
     public function __construct($dog)
     {
         $this->_dog = $dog;
-        parent::__construct();
     }
 
     public function getDog()
@@ -49,13 +48,38 @@ class Animals extends BusinessObject
     }
 }
 
+class NullTester extends BusinessObject
+{
+    private $_id;
+
+    public function __construct($id = null)
+    {
+        $this->_id = $id;
+    }
+
+    protected function _save()
+    {
+        Zend_Registry::set('saved', true);
+    }
+
+    public function getIntentionalNull()
+    {
+        return null;
+    }
+
+    public function getValue()
+    {
+        return '12345';
+    }
+}
+
 
 class BusinessObjectTest extends PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
         // get a new object factory and save it in registry
-        $factory = new ObjectFactory();
+        $factory = new ObjectFactory;
         Zend_Registry::set('factory', $factory);
     }
 
@@ -139,6 +163,23 @@ class BusinessObjectTest extends PHPUnit_Framework_TestCase
         $object->hydrate();
 
         $this->assertEquals('goat', $object->horse);
+    }
+
+    public function testGetNullFieldIsCached()
+    {
+        $factory = Zend_Registry::get('factory');
+        Zend_Registry::set('saved', false);
+
+        $object = $factory->get('NullTester', 1);
+        $this->assertFalse(Zend_Registry::get('saved'));
+        $object->value;
+        $this->assertTrue(Zend_Registry::get('saved'));
+
+        Zend_Registry::set('saved', false);
+        $object2 = $factory->get('NullTester', 1);
+        $this->assertFalse(Zend_Registry::get('saved'));
+        $object2->intentionalNull;
+        $this->assertFalse(Zend_Registry::get('saved'));
     }
 }
 

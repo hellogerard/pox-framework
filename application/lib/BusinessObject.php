@@ -55,7 +55,7 @@ abstract class BusinessObject
 
     // this function creates an array of business objects with type of given 
     // class name constrained by the given page
-    private function _collect($pks, $class)
+    protected function _collect($pks, $class)
     {
         $start = ($this->pageNo - 1) * $this->pageSize;
         $page = array_slice($pks, $start, $this->pageSize);
@@ -202,7 +202,10 @@ abstract class BusinessObject
 
             // if data has been fetched from the DB, the updated object must be 
             // saved to the cache
-            $this->_save();
+            if (isset($this->_data[$var]))
+            {
+                $this->_save();
+            }
         }
 
         // if data does not exist after above attempts, return null
