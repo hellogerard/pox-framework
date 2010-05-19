@@ -21,8 +21,8 @@ class ObjectFactory
 {
     private $_caching;
     private $_ttl;
-
     private $_cache;
+
     private $_keys;
     private $_request;
     private $_dirty;
@@ -106,7 +106,7 @@ class ObjectFactory
 
             // mark the object as dirty - it will be saved to the cache at 
             // request's end
-            $this->_dirty[] = $object;
+            $this->_dirty[$key] = $object;
         }
 
         // else return the object from the cache
@@ -131,7 +131,7 @@ class ObjectFactory
         $key = $this->_keys[spl_object_hash($object)];
 
         unset($this->_request[$key]);
-        $this->_dirty[] = $object;
+        $this->_dirty[$key] = $object;
         $this->_removed[$key] = true;
         $this->_logger->debug("invalidating $key");
     }
@@ -142,7 +142,7 @@ class ObjectFactory
         $key = $this->_keys[spl_object_hash($object)];
 
         $this->_request[$key] = $object;
-        $this->_dirty[] = $object;
+        $this->_dirty[$key] = $object;
         $this->_logger->debug("$key modified and marked dirty");
     }
 
@@ -157,20 +157,17 @@ class ObjectFactory
 
         // do we need locking here?
 
-        foreach ($this->_dirty as $object)
+        foreach ($this->_dirty as $key => $object)
         {
-            // get the object's key
-            $key = $this->_keys[spl_object_hash($object)];
-
-            if (isset($this->_request[$key]))
-            {
-                // save the object to cache
-                $this->_cache->set($key, serialize($object), $this->_ttl);
-            }
-            else
+            if (isset($this->_removed[$key]))
             {
                 // delete from cache
                 $this->_cache->delete($key);
+            }
+            else
+            {
+                // save the object to cache
+                $this->_cache->set($key, serialize($object), $this->_ttl);
             }
         }
     }

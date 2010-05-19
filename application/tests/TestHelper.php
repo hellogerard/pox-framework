@@ -28,8 +28,11 @@ set_include_path('.'
 );
 
 
-// get a new config and save it in registry
-$config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', 'development');
+// merge the real config and test config and save it in registry
+$params = array('allowModifications' => true);
+$config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', 'development', $params);
+$testConfig = new Zend_Config_Ini(APP_ROOT . '/application/tests/config.ini');
+$config->merge($testConfig);
 Zend_Registry::set('config', $config);
 
 // use a null logger for unit tests
