@@ -27,6 +27,8 @@ class PHPException extends Exception
 
 class Errors
 {
+    private $_production;
+
     public function __construct()
     {
         // if developing, show PHP errors in browser and not in log file.
@@ -55,6 +57,8 @@ class Errors
             // the way to the top of the call stack
             set_exception_handler(array($this, 'uncaught'));
         }
+
+        $this->_production = $production;
     }
 
     /**
@@ -88,8 +92,17 @@ class Errors
 
     public function uncaught($exception)
     {
+        if ($this->_production)
+        {
+            $message = $exception->getMessage() . "\n" . print_r($exception->getTrace(), true);
+            Zend_Registry::get('logger')->warning($message);
+        }
+
         // get a string version of this exception,
         // prepending the date/time of this exception
+        ini_set('xdebug.var_display_max_children', 256);
+        ini_set('xdebug.var_display_max_data', 1024);
+        ini_set('xdebug.var_display_max_depth', 6);
         ob_start();
         var_dump($exception);
         $str = date('Y-m-d H:i:s') . ' ' . ob_get_contents();
@@ -107,10 +120,11 @@ class Errors
         // make pretty for web page
         $str = wordwrap($str, 75, "<br/>", true);
 
-        echo "<h4>You've encountered a fatal error. Please copy and paste the 
+        echo "<h4>You've discovered a fatal error! Please copy and paste the 
             following <br/>\n";
         echo "block of text into an email and send to
-            <a href=\"mailto:bugs@google.com\">bugs@google.com</a>.</h4>\n";
+            <a href=\"mailto:bugs@google.com\">bugs@google.com</a>. After that,<br/>\n";
+        echo "you can always <a href=\"javascript:location.reload();\">try again</a>.</h4>\n";
         
         echo "<pre>$str</pre>";
         exit;
