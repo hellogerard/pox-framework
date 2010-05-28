@@ -2,7 +2,6 @@
 
 
 require('CronParser.php');
-require('JobHelper.php');
 
 
 class Slave
@@ -29,8 +28,8 @@ class Slave
         $now = date('YmdH', $_SERVER['REQUEST_TIME']);
         $this->_logfile = "logs/$now.log";
 
-        // get environment
-        $this->_env = Zend_Registry::get('config')->getSectionName();
+        // get project
+        $this->_project = basename(dirname(dirname(__FILE__)));
 
         // read config.ini
         $this->_config = parse_ini_file("config.ini");
@@ -88,7 +87,7 @@ class Slave
 
         // check for lock file
         $tmp = (function_exists("sys_get_temp_dir")) ? sys_get_temp_dir() : "/tmp";
-        $lockfile = "$tmp/{$this->_env}-$job.lck";
+        $lockfile = "$tmp/{$this->_project}-$job.lck";
 
         if (file_exists($lockfile))
         {

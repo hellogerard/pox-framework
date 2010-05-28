@@ -41,14 +41,14 @@ $env = 'development';
 
 // merge the global config and this job's config and save it in registry
 $params = array('allowModifications' => true);
-$config = new Zend_Config_Ini(CRON_ROOT . '/config.ini', $env, $params);
+$config = new Zend_Config_Ini(APP_ROOT . '/config/config.ini', $env, $params);
 $jobConfig = new Zend_Config_Ini(JOB_ROOT . '/config.ini', $env);
 $config->merge($jobConfig);
 Zend_Registry::set('config', $config);
 
 // set up logger and save it in registry
 $logger = $logger = &Log::singleton('console');
-$debug = (bool) $config->debug->enabled;
+$debug = (bool) $config->application->debug->enabled;
 $loglevel = ($debug) ? PEAR_LOG_DEBUG : PEAR_LOG_INFO;
 $logger->setMask(Log::MAX($loglevel));
 Zend_Registry::set('logger', $logger);
