@@ -70,7 +70,13 @@ class Utilities
         }
         else 
         {
-            $howlong = round((float) ($delta / 86400.0)) . ' days ago';
+            $days = round((float) ($delta / 86400.0));
+
+            $howlong = "$days days ago";
+            if ($days > 7)
+            {
+                $howlong = date('F j \a\t g:ia', $then);
+            }
         }
 
         return $howlong;
