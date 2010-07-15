@@ -23,7 +23,7 @@ abstract class BusinessObject
     // using PHP_INT_MAX with array_slice() appears to be broken on 64-bit 
     // machines. using null with array_slice() is broken in PHP 5.2.3. just set 
     // this to some arbitrary high number.
-    public $pageSize = 1000;
+    public $pageSize = 999999;
 
 
     public function __construct()
