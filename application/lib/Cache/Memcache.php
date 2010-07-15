@@ -57,7 +57,13 @@ class Cache_Memcache implements Cache
 
     public function get($key)
     {
-        return $this->_memcache->get($key);
+        $value = null;
+        if (($return = $this->_memcache->get($key)) !== false)
+        {
+            $value = $return;
+        }
+
+        return $value;
     }
 
     public function set($key, $value, $ttl)
