@@ -114,7 +114,18 @@ class Database
         }
     }
 
-    private function _escape($sql, $bind)
+    public function prepare($sql, $bind = null)
+    {
+        // if no DB connection yet, connect
+        if ($this->_conn === null)
+        {
+            $this->_getConnection();
+        }
+
+        return $this->_prepare($sql, $bind);
+    }
+
+    private function _prepare($sql, $bind)
     {
         // emulates a prepared statement by substituting all question marks 
         // (?'s) with the given, escaped parameter
@@ -188,7 +199,7 @@ class Database
         $this->_logger->debug($bind);
 
         // execute the select statement
-        if (! ($result = $this->_reader->query($this->_escape($sql, $bind))))
+        if (! ($result = $this->_reader->query($this->_prepare($sql, $bind))))
         {
             throw new Exception("could not execute SQL: " . $this->_reader->error);
         }
@@ -268,7 +279,7 @@ class Database
         $this->_logger->debug($bind);
 
         // execute the DML statement
-        if (! $this->_writer->query($this->_escape($sql, $bind)))
+        if (! $this->_writer->query($this->_prepare($sql, $bind)))
         {
             throw new Exception("could not execute DML: " . $this->_writer->error);
         }
