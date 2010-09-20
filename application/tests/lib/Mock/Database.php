@@ -169,7 +169,11 @@ class Mock_Database
         preg_match('/ on duplicate key update.*$/si', $sql, $matches);
         $clause = $matches[0];
         $numParams = substr_count($clause, '?');
-        $bind = array_slice($bind, 0, -$numParams);
+
+        if ($numParams > 0)
+        {
+            $bind = array_slice($bind, 0, -$numParams);
+        }
 
         $sql = str_replace($clause, '', $sql);
         $sql = preg_replace('/^insert /i', 'insert or replace ', $sql);
