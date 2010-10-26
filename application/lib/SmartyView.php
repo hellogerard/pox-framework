@@ -66,7 +66,7 @@ class SmartyView extends Smarty
 
     public function flash($message = null)
     {
-        if (! empty($message))
+        if ($message !== null)
         {
             $_SESSION['flash'] = $message;
         }
