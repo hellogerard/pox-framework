@@ -24,6 +24,7 @@ set_include_path('.'
     . PATH_SEPARATOR . APP_ROOT . '/application/tests/models'
     . PATH_SEPARATOR . APP_ROOT . '/application/tests/controllers'
     . PATH_SEPARATOR . get_include_path()
+    . PATH_SEPARATOR . APP_ROOT . '/cron'
     . PATH_SEPARATOR . APP_ROOT . '/thirdpartylibs'
 );
 
