@@ -17,48 +17,41 @@ class PHPException extends Exception
 }
 
 /**
- * This class handles in general capture any PHP errors and any PEAR errors and 
- * creates exceptions out of them. Then it throws these exceptions.  In this 
- * way, there are no PHP errors in the system - everything is an exception. 
- * Developers are free to catch the error/exception at any level, but the 
- * exception MUST be caught.  Any uncaught exceptions will result in a very ugly 
+ * This class handles in general capture any PHP errors and any PEAR errors and
+ * creates exceptions out of them. Then it throws these exceptions.  In this
+ * way, there are no PHP errors in the system - everything is an exception.
+ * Developers are free to catch the error/exception at any level, but the
+ * exception MUST be caught.  Any uncaught exceptions will result in a very ugly
  * screen in production, or result in a Fatal Error in non-production.
  */
 
 class Errors
 {
-    private $_production;
 
     public function __construct()
     {
-        // if developing, show PHP errors in browser and not in log file.
-        // otherwise, log them to file, and do not show in browser.
-        $mode = Zend_Registry::get('config')->getSectionName();
-        $production = ($mode == 'production') ? true : false;
-
-        ini_set('display_errors', ! $production);
-        ini_set('log_errors', $production);
-
-        // override the PHP error handler with this class' php() function,
-        // using the system error reporting level
+        // override the PHP error handler with php() function, using the system
+        // error reporting level. this means php.ini settings 'display_errors'
+        // and 'log_errors' are ignored.
         set_error_handler(array($this, 'php'), error_reporting());
 
-        // override the PEAR error handler with this class' pear() function
+        // same with the PEAR error handler - override with pear() function
         PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($this, 'pear'));
 
         // so now an exception will be created for any problem in the system.
         // developers are forced to handle exceptions. if they do not,
         // there will be an uncaught exeception Fatal Error.
-        // in production, let's have a global function to catch any uncaught 
-        // exceptions.
-        if ($production)
+
+        // if developing, show exceptions in browser and not in log file.
+        // in production, log them to file, and do not show in browser.
+
+        $mode = Zend_Registry::get('config')->getSectionName();
+        if ($mode == 'production')
         {
-            // call this class' uncaught() function if an exception rises all 
+            // call this class' uncaught() function if an exception rises all
             // the way to the top of the call stack
             set_exception_handler(array($this, 'uncaught'));
         }
-
-        $this->_production = $production;
     }
 
     /**
@@ -92,11 +85,8 @@ class Errors
 
     public function uncaught($exception)
     {
-        if ($this->_production)
-        {
-            $message = $exception->getMessage() . "\n" . print_r($exception->getTrace(), true);
-            Zend_Registry::get('logger')->warning($message);
-        }
+        $message = $exception->getMessage() . "\n" . print_r($exception->getTrace(), true);
+        error_log($message);
 
         // get a string version of this exception,
         // prepending the date/time of this exception
@@ -123,9 +113,9 @@ class Errors
         echo "<h4>You've discovered a fatal error! Please copy and paste the 
             following <br/>\n";
         echo "block of text into an email and send to
-            <a href=\"mailto:bugs@google.com\">bugs@google.com</a>. After that,<br/>\n";
+            <a href=\"mailto:bugs@example.com\">bugs@example.com</a>. After that,<br/>\n";
         echo "you can always <a href=\"javascript:location.reload();\">try again</a>.</h4>\n";
-        
+
         echo "<pre>$str</pre>";
         exit;
     }
