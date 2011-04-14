@@ -1,7 +1,5 @@
 <?php
 
-require('Smarty/libs/Smarty.class.php');
-
 /**
  * Smarty wrapper class, simply enables syntax like:
  *
@@ -46,17 +44,17 @@ class SmartyView extends Smarty
 
     public function __get($var)
     {
-        return $this->get_template_vars($var);
+        return $this->getTemplateVars($var);
     }
 
     public function __unset($var)
     {
-        $this->clear_assign($var);
+        $this->clearAssign($var);
     }
 
     public function __isset($var)
     {
-        return ($this->get_template_vars($var)) ? true : false;
+        return ($this->getTemplateVars($var)) ? true : false;
     }
 
     /**

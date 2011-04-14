@@ -19,6 +19,8 @@ set_include_path('.'
     . PATH_SEPARATOR . APP_ROOT . '/thirdpartylibs'
 );
 
+require('Smarty/libs/Smarty.class.php');
+spl_autoload_register('__autoload');
 
 // be careful if modifying the following line.
 // phing replaces it when deploying this project.
