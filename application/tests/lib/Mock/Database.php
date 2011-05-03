@@ -103,6 +103,11 @@ class Mock_Database
 
     private function _execute($sql, $bind = null)
     {
+        if (stripos($sql, "order by field") > 0)
+        {
+            list($sql, $bind) = $this->_orderByField($sql, $bind);
+        }
+
         if (! ($result = $this->_conn->query($this->_prepare($sql, $bind))))
         {
             throw new Exception("could not execute query: " . sqlite_error_string($this->_conn->lastError()));
@@ -158,6 +163,30 @@ class Mock_Database
         $results = $this->getRows($sql, $bind);
 
         return (empty($results)) ? $results : $results[0];
+    }
+
+    /**
+     * translate the 'ORDER BY FIELD' MySQL feature to SQLite
+     */
+
+    private function _orderByField($sql, $bind)
+    {
+        preg_match('/ order by field\((.*)\)$/si', $sql, $matches);
+        $oldClause = $matches[0];
+        $values = explode(',', $matches[1]);
+
+        $field = array_shift($values);
+
+        $newClause = " order by case $field";
+        for ($i = 0, $size = count($values); $i < $size; $i++)
+        {
+            $newClause .= " when {$values[$i]} then $i";
+        }
+        $newClause .= ' end';
+
+        $sql = str_replace($oldClause, $newClause, $sql);
+
+        return array($sql, $bind);
     }
 
     /**
