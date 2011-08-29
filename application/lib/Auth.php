@@ -101,6 +101,8 @@ class Auth
 
                 self::_db()->query($sql, array($token));
 
+                $_SESSION['pox_username'] = $result;
+
                 return $result;
             }
             else
