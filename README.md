@@ -10,6 +10,8 @@ Pox is (yet another) PHP MVC web framework with the following features.
   database.
 - Collections of objects are automatically handled and lazily loaded as the data
   is paged.
+- Also has a nifty job manager that manages multiple offline jobs with a single 
+  cron job and plain text configuration files.
 
 
 _see main project page at <http://pox-php.straylightrun.net>._
