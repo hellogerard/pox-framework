@@ -25,14 +25,15 @@ class Cache_Memcache implements Cache
         // grab logger for convenience
         $this->_logger = Zend_Registry::get('logger');
 
-        $this->_memcache = new Memcache;
-        $this->_connect();
+        // lazily connect
+        $this->_memcache = null;
     }
 
     private function _connect()
     {
         $i = $errs = 0;
         $server = "server$i";
+        $this->_memcache = new Memcache;
 
         // connect to each server
         while (isset($this->_config->memcache->$server))
@@ -51,12 +52,18 @@ class Cache_Memcache implements Cache
         // if all servers fail to connect, throw exception
         if ($errs == $i)
         {
+            $this->_memcache = null;
             throw new Exception("could not connect to any memcache servers");
         }
     }
 
     public function get($key)
     {
+        if ($this->_memcache === null)
+        {
+            $this->_connect();
+        }
+
         $value = null;
         if (($return = $this->_memcache->get($key)) !== false)
         {
@@ -68,11 +75,21 @@ class Cache_Memcache implements Cache
 
     public function set($key, $value, $ttl)
     {
+        if ($this->_memcache === null)
+        {
+            $this->_connect();
+        }
+
         $this->_memcache->set($key, $value, 0, $ttl);
     }
 
     public function delete($key)
     {
+        if ($this->_memcache === null)
+        {
+            $this->_connect();
+        }
+
         $this->_memcache->delete($key);
     }
 }
