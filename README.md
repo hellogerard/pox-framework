@@ -14,7 +14,7 @@ Pox is (yet another) PHP MVC web framework with the following features.
   cron job and plain text configuration files.
 
 
-_see main project page at <http://pox-php.straylightrun.net>._
+_see main project page at <http://www.straylightrun.net/pox-php>._
 
 
 ----
